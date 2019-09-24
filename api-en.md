@@ -1,8 +1,7 @@
-# Public Rest API for Matrix (2019-07-08)
+# Public Rest API for Bitsoda (2019-09-24)
 # General API Information
-* The base endpoint is: **https://api.matrix.com**
+* The base endpoint is: **https://api.bitsoda.com**
 * All endpoints return either a JSON object or array.
-* Data is returned in **ascending** order. Oldest first, newest last.
 * All time and timestamp related fields are in milliseconds.
 # API Access
 ## Authentication
