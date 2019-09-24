@@ -1,2 +1,1 @@
-# api-docs
-Bitsoda API documentations
+# Bitsoda API documentations
