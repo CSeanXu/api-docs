@@ -1,12 +1,76 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import hmac
+import json as _json
 import time
-import json
 import uuid
 import hashlib
-import hmac
 
-from urllib import request, parse, error
+import aiohttp
+
+from urllib import parse
+
+
+async def get(url, headers=None, params=None, timeout=10):
+    async with aiohttp.ClientSession(
+            headers=headers,
+            timeout=aiohttp.ClientTimeout(timeout)
+    ) as session:
+
+        async with session.get(url, params=params) as resp:
+
+            try:
+
+                return await resp.json(
+                    content_type=None,  # disable content-type validation
+                    loads=lambda body: _json.loads(body, object_hook=lambda d: Dict(**d))
+                )
+
+            except Exception as e:
+
+                print(e)
+
+                raise e
+
+
+async def post(url, headers=None, params=None, data=None, json=None, timeout=10):
+    if data is not None and json is not None:
+        raise ValueError('data and json parameters can not be used at the same time')
+
+    async with aiohttp.ClientSession(
+            headers=headers,
+            timeout=aiohttp.ClientTimeout(timeout)
+    ) as session:
+
+        async with session.post(url, params=params, data=data, json=json) as resp:
+
+            try:
+
+                return await resp.json(
+                    content_type=None,  # disable content-type validation
+                    loads=lambda body: _json.loads(body, object_hook=lambda d: Dict(**d))
+                )
+
+            except Exception as e:
+
+                print(e)
+
+                raise e
+
+
+class Dict(dict):
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+
+    def __getattr__(self, key):
+        try:
+            return self[key]
+        except KeyError:
+            raise AttributeError(r"Missing attribute '%s' '%s'" % (key, self))
+
+    def __setattr__(self, key, value):
+        self[key] = value
 
 
 class ApiClient(object):
@@ -32,7 +96,7 @@ class ApiClient(object):
         return await self._http('GET', path, params, None)
 
     async def post(self, path, obj=None):
-        data = json.dumps(obj) if obj is not None else None
+        data = _json.dumps(obj) if obj is not None else None
         return await self._http('POST', path, {}, data)
 
     async def _http(self, method, path, params, data):
@@ -80,3 +144,16 @@ class ApiClient(object):
     def debug(self, msg):
         if self._debug:
             print(msg)
+
+
+if __name__ == '__main__':
+
+    import asyncio
+
+    loop = asyncio.get_event_loop()
+
+    host = "api.bitsoda.com"
+
+    client = ApiClient("THE_KEY", "THE_SECRET", host=host, enable_debug=True)
+
+    loop.run_until_complete(client.get("/v1/json/user/profile"))
