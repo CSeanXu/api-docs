@@ -6,8 +6,6 @@ import uuid
 import hashlib
 import hmac
 
-from sodabot.http_utils import get, post
-
 from urllib import request, parse, error
 
 
